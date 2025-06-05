@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Checker Dashboard</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        textarea {
+            width: 80%;
+            height: 100px;
+            margin: 10px auto;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            width: 80%;
+            margin: 10px auto;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Recognizing Grammatical Mistakes</h1>
+
+    <button onclick="startRecording()">🎤 Speak Now</button>
+    <textarea id="user-input" placeholder="Your speech will appear here..."></textarea>
+    <br>
+    <button onclick="processText()">Submit</button>
+
+    <div class="result" id="highlighted-result"></div>
+    <div class="result" id="corrected-result"></div>
+
+    <script>
+        function startRecording() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript;
+                document.getElementById('user-input').value = spokenText;
+            };
+
+            recognition.onerror = (event) => {
+                alert('Error capturing speech: ' + event.error);
+            };
+
+            recognition.start();
+        }
+
+        function processText() {
+            const userInput = document.getElementById('user-input').value;
+
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: userInput }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('highlighted-result').innerHTML =
+                    `<h3>Highlighted Mistakes:</h3> ${data.highlighted || 'No mistakes found.'}`;
+                document.getElementById('corrected-result').innerHTML =
+                    `<h3>Corrected Sentence:</h3> ${data.corrected || 'No corrections available.'}`;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

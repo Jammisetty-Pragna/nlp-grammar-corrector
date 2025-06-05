@@ -1,0 +1,6 @@
+Flask==3.0.3
+gunicorn==21.2.0
+openai==0.28.0
+SpeechRecognition==3.10.4
+language_tool_python==2.8.1
+python-dotenv==1.0.1
